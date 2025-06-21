@@ -14,11 +14,13 @@ def search_transfermarkt(player_name: str):
     res = requests.get(search_url, headers=HEADERS)
     soup = BeautifulSoup(res.text, "html.parser")
 
-    link_tag = soup.select_one("a.spielprofil_tooltip")
-    if link_tag:
+    # ננסה לעבור על כל הקישורים שמחזירים תוצאות של שחקנים
+    links = soup.select("a.spielprofil_tooltip")
+    for link_tag in links:
         relative_link = link_tag.get("href", "")
-        player_url = f"https://www.transfermarkt.com{relative_link}"
-        return player_url
+        if "/profil/spieler/" in relative_link:
+            player_url = f"https://www.transfermarkt.com{relative_link}"
+            return player_url
     return None
 
 def extract_market_value(player_url: str):

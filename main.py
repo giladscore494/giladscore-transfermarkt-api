@@ -6,7 +6,11 @@ from bs4 import BeautifulSoup
 app = FastAPI()
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
 }
 
 def search_transfermarkt(player_name: str):
@@ -14,7 +18,6 @@ def search_transfermarkt(player_name: str):
     res = requests.get(search_url, headers=HEADERS)
     soup = BeautifulSoup(res.text, "html.parser")
 
-    # ננסה לעבור על כל הקישורים שמחזירים תוצאות של שחקנים
     links = soup.select("a.spielprofil_tooltip")
     for link_tag in links:
         relative_link = link_tag.get("href", "")

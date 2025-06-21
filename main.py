@@ -10,13 +10,24 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9"
 }
 
+PROXY_URL = "https://api.allorigins.win/get?url="
+
+def proxy_get_html(url: str):
+    proxied_url = PROXY_URL + requests.utils.quote(url, safe='')
+    res = requests.get(proxied_url, headers=HEADERS)
+    if res.status_code != 200:
+        return None
+    data = res.json()
+    return data.get("contents", "")
+
 def search_transfermarkt_url(player_name: str):
     query = f"site:transfermarkt.com {player_name} profile"
-    url = f"https://html.duckduckgo.com/html/?q={query}"
-    res = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(res.text, "html.parser")
+    duckduckgo_url = f"https://html.duckduckgo.com/html/?q={query}"
+    html = proxy_get_html(duckduckgo_url)
+    if not html:
+        return None
+    soup = BeautifulSoup(html, "html.parser")
     results = soup.select("a.result__a")
-
     for tag in results:
         href = tag.get("href", "")
         if "transfermarkt.com" in href and "/profil/spieler/" in href:
@@ -24,8 +35,10 @@ def search_transfermarkt_url(player_name: str):
     return None
 
 def extract_market_value(player_url: str):
-    res = requests.get(player_url, headers=HEADERS)
-    soup = BeautifulSoup(res.text, "html.parser")
+    html = proxy_get_html(player_url)
+    if not html:
+        return None
+    soup = BeautifulSoup(html, "html.parser")
     mv_tag = soup.find("div", class_="dataMarktwert")
     if mv_tag:
         return mv_tag.text.strip()
